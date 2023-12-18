@@ -51,7 +51,7 @@ func (k Keeper) Tally(ctx context.Context, proposal v1.Proposal) (passes, burnDe
 	case v1.ProposalType_PROPOSAL_TYPE_EXPEDITED:
 		return k.tallyExpedited(totalVoterPower, totalBonded, results, params)
 	case v1.ProposalType_PROPOSAL_TYPE_MULTIPLE_CHOICE:
-		return k.tallyMultipleChoice(totalVoterPower, totalBonded, results, params) // TODO(@julienrbrt): implement in follow up
+		return k.tallyMultipleChoice(totalVoterPower, totalBonded, results, params)
 	default:
 		return k.tallyStandard(totalVoterPower, totalBonded, results, params)
 	}
@@ -147,6 +147,8 @@ func (k Keeper) tallyMultipleChoice(totalVoterPower math.LegacyDec, totalBonded 
 	if percentVoting.LT(quorum) {
 		return false, params.BurnVoteQuorum, tallyResults, nil
 	}
+
+	// a multiple choice proposal always passes unless it was spam or quorum was not reached.
 
 	return true, false, tallyResults, nil
 }

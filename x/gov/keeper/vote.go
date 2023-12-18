@@ -40,10 +40,26 @@ func (k Keeper) AddVote(ctx context.Context, proposalID uint64, voterAddr sdk.Ac
 			if option.Option != v1.OptionNo && option.Option != v1.OptionSpam {
 				return errors.Wrap(types.ErrInvalidVote, "optimistic proposals can only be rejected")
 			}
-		default:
-			if !v1.ValidWeightedVoteOption(*option) {
-				return errors.Wrap(types.ErrInvalidVote, option.String())
+		case v1.ProposalType_PROPOSAL_TYPE_MULTIPLE_CHOICE:
+			proposalOptionsStr, err := k.ProposalVoteOptions.Get(ctx, proposalID)
+			if err != nil {
+				return err
 			}
+
+			// verify votes only on existing votes
+			if proposalOptionsStr.OptionOne == "" && option.Option == v1.OptionOne { // should never trigger option one is always mandatory
+				return errors.Wrap(types.ErrInvalidVote, "invalid vote option")
+			} else if proposalOptionsStr.OptionTwo == "" && option.Option == v1.OptionTwo { // should never trigger option two is always mandatory
+				return errors.Wrap(types.ErrInvalidVote, "invalid vote option")
+			} else if proposalOptionsStr.OptionThree == "" && option.Option == v1.OptionThree {
+				return errors.Wrap(types.ErrInvalidVote, "invalid vote option")
+			} else if proposalOptionsStr.OptionFour == "" && option.Option == v1.OptionFour {
+				return errors.Wrap(types.ErrInvalidVote, "invalid vote option")
+			}
+		}
+
+		if !v1.ValidWeightedVoteOption(*option) {
+			return errors.Wrap(types.ErrInvalidVote, option.String())
 		}
 	}
 
